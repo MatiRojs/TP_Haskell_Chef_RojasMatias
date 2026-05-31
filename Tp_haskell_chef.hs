@@ -14,33 +14,64 @@ data Platos=UnPlato{
     dificultad::Int
 }deriving (Eq,Show)
 
-sopa = UnPlato{
-    nombrePlato = "sopa",
-    ingredientes=[harina, harina, harina],
+pizza = UnPlato{
+    nombrePlato = "pizza",
+    ingredientes=[harina, salsaTomate, queso, jamon, aceituna, queso],
     dificultad=8
+}
+
+harina=UnIngrediente{
+    nombreIngrediente="harina",
+    pesoIngrediente=100
+}
+
+salsaTomate=UnIngrediente{
+    nombreIngrediente="salsa de tomate",
+    pesoIngrediente=50
+}
+
+queso=UnIngrediente{
+    nombreIngrediente="queso",
+    pesoIngrediente=100
+}
+
+jamon=UnIngrediente{
+    nombreIngrediente="jamon",
+    pesoIngrediente=50
+}
+
+aceituna=UnIngrediente{
+    nombreIngrediente="aceituna",
+    pesoIngrediente=20
 }
 
 ensalada=UnPlato{
     nombrePlato="ensalada",
-    ingredientes=[cafe, cafe],
-    dificultad=9
+    ingredientes=[lechuga, tomate, zanahoria],
+    dificultad=2
 }
 
+lechuga=UnIngrediente{
+    nombreIngrediente="lechuga",
+    pesoIngrediente=50
+}
+
+tomate=UnIngrediente{
+    nombreIngrediente="tomate",
+    pesoIngrediente=50
+}
+
+zanahoria=UnIngrediente{
+    nombreIngrediente="zanahoria",
+    pesoIngrediente=50
+}
 
 data Ingredientes=UnIngrediente{
     nombreIngrediente::String,
     pesoIngrediente::Int
 }deriving (Eq,Show)
 
-cafe=UnIngrediente{
-    nombreIngrediente="cafe",
-    pesoIngrediente=2
-}
 
-harina=UnIngrediente{
-    nombreIngrediente="harina",
-    pesoIngrediente=6
-}
 
 --funciones Parte A
     --trucos
@@ -63,11 +94,11 @@ darSabor cantSal cantAzucar unPlato = salar cantSal .endulzar cantAzucar $ unPla
 modificarPesoIngrediente::(Int->Int)->Ingredientes->Ingredientes
 modificarPesoIngrediente unaOperacion unIngrediente= unIngrediente{pesoIngrediente=unaOperacion(pesoIngrediente unIngrediente)}
 
-modificarIngredientes::(Int->Int)->Platos->Platos
-modificarIngredientes unaOperacion unPlato = unPlato{ingredientes=map(modificarPesoIngrediente unaOperacion)(ingredientes unPlato)}
+modificarPesoCadaIngrediente::(Int->Int)->Platos->Platos
+modificarPesoCadaIngrediente unaOperacion unPlato = unPlato{ingredientes=map(modificarPesoIngrediente unaOperacion)(ingredientes unPlato)}
 
 duplicarPorcion::Platos->Platos
-duplicarPorcion unPlato=modificarIngredientes (*2) unPlato
+duplicarPorcion unPlato=modificarPesoCadaIngrediente (*2) unPlato
 
 simplificar::Platos->Platos
 simplificar unPlato
@@ -82,27 +113,30 @@ ingredientesConMasDe10Gramos unIngrediente = pesoIngrediente unIngrediente >= 10
 nombresIngredientes::[Ingredientes]->[String]
 nombresIngredientes=map nombreIngrediente
 
-buscaNombreEnLista::Platos->String->Bool
-buscaNombreEnLista unPlato unNombre = any (==unNombre) (nombresIngredientes(ingredientes unPlato))
+contieneIngrediente::Platos->String->Bool
+contieneIngrediente unPlato unNombre = any (==unNombre) (nombresIngredientes(ingredientes unPlato))
 
 esVegano::Platos->Bool
-esVegano unPlato= not (buscaNombreEnLista unPlato "carne" || buscaNombreEnLista unPlato "huevos" || buscaNombreEnLista unPlato "lacteos")
+esVegano unPlato= not (contieneIngrediente unPlato "carne" || contieneIngrediente unPlato "huevos" || contieneIngrediente unPlato "lacteos")
 
 esSinTacc::Platos->Bool
-esSinTacc unPlato= not (buscaNombreEnLista unPlato "harina")
+esSinTacc unPlato= not (contieneIngrediente unPlato "harina")
 
 esComplejo::Platos->Bool
 esComplejo unPlato= (length(ingredientes unPlato) > 5) && (dificultad unPlato > 7)
 
+ingredientesConNombre::String->Platos->[Ingredientes]
+ingredientesConNombre unNombre=filter((== unNombre).nombreIngrediente).ingredientes
+
 noAptoHipertension::Platos->Bool
-noAptoHipertension unPlato=(pesoIngrediente (head (filter (\ingrediente -> nombreIngrediente ingrediente == "sal") (ingredientes unPlato))) > 2)
+noAptoHipertension unPlato=any((>2).pesoIngrediente)(ingredientesConNombre "sal" unPlato)
 
 --parte B
 
 pepe=UnParticipante{
     nombre= "Pepe Ronccino",
     trucosCocina=[darSabor 2 5, simplificar, duplicarPorcion],
-    platoEspecialidad=sopa
+    platoEspecialidad=pizza
 }
 
 lucas=UnParticipante{
